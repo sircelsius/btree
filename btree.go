@@ -20,6 +20,7 @@ func NewBinarySearchTree(slice []int) *BinarySearchTree {
 	if len(slice) == 0 {
 		return nil
 	}
+
 	tree := BinarySearchTree{
 		Root: &Node{
 			Value: slice[0],
@@ -74,19 +75,19 @@ func (n *Node) Depth() int {
 		return 1
 	}
 	if n.Right == nil {
-		return n.Left.Depth()
+		return n.Left.Depth() + 1
 	}
 	if n.Left == nil {
-		return n.Right.Depth()
+		return n.Right.Depth() + 1
 	}
 
 	left := n.Left.Depth()
 	right := n.Right.Depth()
 
 	if left > right {
-		return left
+		return left + 1
 	}
-	return right
+	return right + 1
 }
 
 func (n *Node) print(level int) string {
@@ -112,3 +113,52 @@ func (t *BinarySearchTree) String() string {
 	return t.Root.print(0)
 }
 
+func (t *BinarySearchTree) IsBalanced() bool {
+	t.lock.Lock()
+	defer t.lock.Unlock()
+	if t.Root == nil {
+		return true
+	}
+	return t.Root.isBalanced()
+}
+
+func (n *Node) isBalanced() bool {
+	if n.Left == nil {
+		if n.Right == nil {
+			return true
+		} else {
+			return n.Right.Depth() <= 1
+		}
+	} else {
+		if n.Right == nil {
+			return n.Left.Depth() <= 1
+		}
+		return n.Left.isBalanced() && n.Right.isBalanced()
+	}
+}
+
+func (n *Node) search(value int) bool {
+	if n.Value == value {
+		return true
+	}
+	if value <= n.Value {
+		if n.Left != nil {
+			return n.Left.search(value)
+		}
+		return false
+	} else {
+		if n.Right != nil {
+			return n.Right.search(value)
+		}
+		return false
+	}
+}
+
+func (t *BinarySearchTree) Search(value int) bool {
+	t.lock.Lock()
+	defer t.lock.Unlock()
+	if t.Root == nil {
+		return false
+	}
+	return t.Root.search(value)
+}
